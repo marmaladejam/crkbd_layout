@@ -36,9 +36,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
   KC_LSFT,MT(MOD_LGUI,KC_A),MT(MOD_LALT,KC_S),MT(MOD_LCTL,KC_D),MT(MOD_LSFT,KC_F),KC_G,           KC_H,MT(MOD_RSFT,KC_J),MT(MOD_RCTL,KC_K),MT(MOD_RALT,KC_L),MT(MOD_RGUI,KC_SCLN),KC_QUOT,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      XXXXXXX,LT(3,KC_Z),KC_X,KC_C,   KC_V,    KC_B,                      KC_N, KC_M,KC_COMM,KC_DOT,LT(3,KC_SLSH),XXXXXXX,
+      XXXXXXX,LT(3,KC_Z),  KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,   KC_M,KC_COMM,KC_DOT,LT(3,KC_SLSH),XXXXXXX,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-        LT(4,KC_ESC),  LT(1,KC_SPC),  LT(2,KC_TAB),     LT(6,KC_ENT), LT(5,KC_BSPC), LT(7,KC_DEL)
+                          LT(4,KC_ESC),  LT(1,KC_SPC),  LT(2,KC_TAB),     LT(6,KC_ENT), LT(5,KC_BSPC), LT(7,KC_DEL)
                                       //`--------------------------'  `--------------------------'
   ),
 
@@ -46,7 +46,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                     KC_AGAIN,KC_PASTE, KC_COPY,  KC_CUT, KC_UNDO, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      XXXXXXX, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, CW_TOGG,                      KC_CAPS, KC_LEFT, KC_DOWN,   KC_UP, KC_RGHT, XXXXXXX,
+      KC_MCTL, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, CW_TOGG,                      KC_CAPS, KC_LEFT, KC_DOWN,   KC_UP, KC_RGHT, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                       KC_INS, KC_HOME, KC_PGDN, KC_PGUP,  KC_END, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
