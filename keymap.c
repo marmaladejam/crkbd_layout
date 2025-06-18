@@ -19,6 +19,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include <stdio.h>
 
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case MT(MOD_LSFT,KC_F):
+        case MT(MOD_RSFT,KC_J):
+            return TAPPING_TERM - 80;
+        default:
+            return TAPPING_TERM;
+    }
+}
+
 #define BASE 0
 #define NAVIGATION 1
 #define MOUSE 2

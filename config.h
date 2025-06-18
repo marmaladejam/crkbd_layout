@@ -22,18 +22,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // default but used in macros
 #define TAPPING_TERM 200
-
+#define TAPPING_TERM_PER_KEY
 // Prevent normal rollover on alphas from accidentally triggering mods.
 #define FLOW_TAP_TERM 150
 
 // Enable rapid switch from tap to hold, disables double tap hold auto-repeat. 
 #define QUICK_TAP_TERM 0
-#define PERMISSIVE_HOLD
 
 // Auto Shift
-// #define NO_AUTO_SHIFT_ALPHA
-// #define AUTO_SHIFT_TIMEOUT TAPPING_TERM
-// #define AUTO_SHIFT_NO_SETUP
+#define NO_AUTO_SHIFT_ALPHA
+#define AUTO_SHIFT_TIMEOUT TAPPING_TERM*2
 
 // Mouse key speed and acceleration.
 #undef MOUSEKEY_DELAY
@@ -50,13 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //#define USE_MATRIX_I2C
 
 /* Select hand configuration */
-
 #define MASTER_LEFT
-// #define MASTER_RIGHT
-// #define EE_HANDS
-
-//#define QUICK_TAP_TERM 0
-//#define TAPPING_TERM 100
 
 #ifdef RGBLIGHT_ENABLE
     #define RGBLIGHT_EFFECT_BREATHING
