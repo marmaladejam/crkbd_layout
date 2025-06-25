@@ -19,12 +19,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include <stdio.h>
 
+#define BASE 0
+#define NAVIGATION 1
+#define MOUSE 2
+#define BUTTON 3
+#define MEDIA 4
+#define NUMERIC 5
+#define SYMBOL 6
+#define FUNCTION 7
+#define ADDITIONAL_FEATURES 8
+
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case MT(MOD_RSFT,KC_BSPC):
-            return TAPPING_TERM - 100;
+            return TAPPING_TERM - 40;
         default:
             return TAPPING_TERM;
+    }
+}
+
+bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case LT(SYMBOL,KC_TAB):
+        case LT(NUMERIC,KC_ESC):
+        case MT(MOD_RSFT,KC_BSPC):
+            // Immediately select the hold action when another key is tapped.
+            return true;
+        default:
+            // Do not select the hold action when another key is tapped.
+            return false;
     }
 }
 
@@ -38,16 +61,6 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 //             return false;
 //     }
 // }
-
-#define BASE 0
-#define NAVIGATION 1
-#define MOUSE 2
-#define BUTTON 3
-#define MEDIA 4
-#define NUMERIC 5
-#define SYMBOL 6
-#define FUNCTION 7
-#define ADDITIONAL_FEATURES 8
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {  
   [BASE] = LAYOUT_split_3x6_3(
