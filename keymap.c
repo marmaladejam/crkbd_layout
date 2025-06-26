@@ -19,6 +19,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include QMK_KEYBOARD_H
 #include <stdio.h>
 
+// Timer to track the last keypress for idle time detection (in milliseconds)
+static uint32_t last_keypress_timer = 0;
+
+// Timer to trigger the OLED clear action periodically when idle (in milliseconds)
+static uint32_t oled_clear_timer = 0;
+
+// Defines the idle time threshold in milliseconds
+#define OLED_IDLE_TIMEOUT 3000
+
+// Defines the interval for clearing the screen after the timeout is met
+#define OLED_CLEAR_INTERVAL 3000
+
+// Defines the row on the OLED from which to start clearing.
+// (0-indexed, so 2 means the 3rd row)
+#define OLED_CLEAR_START_ROW 3
+
 #define BASE 0
 #define NAVIGATION 1
 #define MOUSE 2
@@ -113,9 +129,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [MEDIA] = LAYOUT_split_3x6_3(
   //,-----------------------------------------------------.                    ,-----------------------------------------------------.
-      _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RGB_TOG, RGB_MOD, RGB_HUI, RGB_SAI, RGB_VAI, XXXXXXX,
+      _______, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      RM_TOGG, RM_NEXT, RM_HUEU, RM_SATU, RM_VALU, RM_SPDU,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-      XXXXXXX, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, XXXXXXX,                      KC_MUTE, KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT, XXXXXXX,
+      KC_LSFT, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, XXXXXXX,                      KC_MUTE, KC_MPRV, KC_VOLD, KC_VOLU, KC_MNXT, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
       XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
@@ -183,6 +199,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     }
 
     void oled_render_layer_state(void) {
+        oled_set_cursor(0, 0);
         oled_write_P(PSTR("Layer"), false);
         oled_set_cursor(0, 2);
         switch (get_highest_layer(layer_state)) {
@@ -216,8 +233,68 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         }
     }
 
+    // A custom helper function to map the RGB Matrix mode ID to a readable string.
+    // PSTR() is used to store strings in PROGMEM (flash memory) to save RAM.
+    const char* get_rgb_matrix_mode_name(uint8_t mode_id) {
+        switch (mode_id) {
+            case RGB_MATRIX_NONE:                   return PSTR("OFF");
+            case RGB_MATRIX_SOLID_COLOR:            return PSTR("SOLID");
+            case RGB_MATRIX_ALPHAS_MODS:            return PSTR("ALPHAS MODS");
+            case RGB_MATRIX_GRADIENT_UP_DOWN:       return PSTR("GRD UD");
+            case RGB_MATRIX_GRADIENT_LEFT_RIGHT:    return PSTR("GRD LR");
+            case RGB_MATRIX_BREATHING:              return PSTR("BREATHING");
+            case RGB_MATRIX_BAND_SAT:               return PSTR("BAND SAT");
+            case RGB_MATRIX_BAND_VAL:               return PSTR("BAND VAL");
+            case RGB_MATRIX_BAND_PINWHEEL_SAT:      return PSTR("PWHEEL SAT");
+            case RGB_MATRIX_BAND_PINWHEEL_VAL:      return PSTR("PWHEEL VAL");
+            case RGB_MATRIX_BAND_SPIRAL_SAT:        return PSTR("SPIRAL SAT");
+            case RGB_MATRIX_BAND_SPIRAL_VAL:        return PSTR("SPIRAL VAL");
+            case RGB_MATRIX_CYCLE_ALL:              return PSTR("CYCLE ALL");
+            case RGB_MATRIX_CYCLE_LEFT_RIGHT:       return PSTR("LR CYCLE");
+            case RGB_MATRIX_CYCLE_UP_DOWN:          return PSTR("UD CYCLE");
+            case RGB_MATRIX_CYCLE_OUT_IN:           return PSTR("IO CYCLE");
+            case RGB_MATRIX_CYCLE_OUT_IN_DUAL:      return PSTR("IO DUAL");
+            case RGB_MATRIX_RAINBOW_MOVING_CHEVRON: return PSTR("CHEVRON");
+            case RGB_MATRIX_CYCLE_PINWHEEL:         return PSTR("PINWHEEL");
+            case RGB_MATRIX_CYCLE_SPIRAL:           return PSTR("SPIRAL");
+            case RGB_MATRIX_DUAL_BEACON:            return PSTR("DUAL BEACON");
+            case RGB_MATRIX_RAINBOW_BEACON:         return PSTR("RNBW BEACON");
+            case RGB_MATRIX_RAINBOW_PINWHEELS:      return PSTR("RNBW PWHEEL");
+            case RGB_MATRIX_FLOWER_BLOOMING:        return PSTR("FLOWER");
+            case RGB_MATRIX_RAINDROPS:              return PSTR("RAINDROPS");
+            case RGB_MATRIX_JELLYBEAN_RAINDROPS:    return PSTR("J-DROPS");
+            case RGB_MATRIX_HUE_BREATHING:          return PSTR("HUE BR");
+            case RGB_MATRIX_HUE_PENDULUM:           return PSTR("HUE PEND");
+            case RGB_MATRIX_HUE_WAVE:               return PSTR("HUE WAVE");
+            case RGB_MATRIX_PIXEL_FRACTAL:          return PSTR("FRACTAL");
+            case RGB_MATRIX_PIXEL_FLOW:             return PSTR("PIXEL FLOW");
+            case RGB_MATRIX_PIXEL_RAIN:             return PSTR("PIXEL RAIN");
+            case RGB_MATRIX_TYPING_HEATMAP:         return PSTR("HEATMAP");
+            case RGB_MATRIX_DIGITAL_RAIN:           return PSTR("DIGI RAIN");
+            case RGB_MATRIX_SOLID_REACTIVE_SIMPLE:  return PSTR("REAC SIMP");
+            case RGB_MATRIX_SOLID_REACTIVE:         return PSTR("REACTIVE");
+            case RGB_MATRIX_SOLID_REACTIVE_WIDE:    return PSTR("REAC WIDE");
+            case RGB_MATRIX_SOLID_REACTIVE_MULTIWIDE: return PSTR("REAC MULTI");
+            case RGB_MATRIX_SOLID_REACTIVE_CROSS:   return PSTR("REAC CROSS");
+            case RGB_MATRIX_SOLID_REACTIVE_MULTICROSS: return PSTR("REAC MCROSS");
+            case RGB_MATRIX_SOLID_REACTIVE_NEXUS:   return PSTR("REAC NEXUS");
+            case RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS: return PSTR("REAC MNEXUS");
+            case RGB_MATRIX_SPLASH:                 return PSTR("SPLASH");
+            case RGB_MATRIX_MULTISPLASH:            return PSTR("M-SPLASH");
+            case RGB_MATRIX_SOLID_SPLASH:           return PSTR("S-SPLASH");
+            case RGB_MATRIX_SOLID_MULTISPLASH:      return PSTR("SM-SPLASH");
+            case RGB_MATRIX_STARLIGHT:              return PSTR("STARLIGHT");
+            case RGB_MATRIX_STARLIGHT_SMOOTH:       return PSTR("STAR SMTH");
+            case RGB_MATRIX_STARLIGHT_DUAL_HUE:     return PSTR("STAR HUE");
+            case RGB_MATRIX_STARLIGHT_DUAL_SAT:     return PSTR("STAR SAT");
+            case RGB_MATRIX_RIVERFLOW:              return PSTR("RIVERFLOW");
+            
+            default:                                return PSTR("N/A");
+        }
+    }
 
     char keylog_str[24] = {};
+    char rgb_effect[24] = {};
 
     void set_keylog(uint16_t keycode) {
         const char *key_name = get_keycode_string(keycode);
@@ -227,9 +304,26 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         snprintf(keylog_str, sizeof(keylog_str), "%s            ", key_name);
     }
 
+    void set_rgb_effect_string(void) {
+        // --- Get and display the RGB Matrix Effect Name (Mode) ---
+        // 1. Get the current mode ID (integer)
+        uint8_t current_mode = rgb_matrix_get_mode();
+
+        // 2. Use the helper function to get the name string
+        const char *mode_name_P = get_rgb_matrix_mode_name(current_mode);
+
+        // Update keylog_str
+        // Use %s to print the string name.
+        snprintf(rgb_effect, sizeof(rgb_effect), "%s     ", mode_name_P);
+    }
+
     void oled_render_keylog(void) {
         oled_set_cursor(0, 5);
         oled_write_ln_P(keylog_str, false);
+
+        // 3. Write the name to the OLED
+        oled_set_cursor(0, 12);
+        oled_write_ln_P(rgb_effect, false);
     }
 
     void render_bootmagic_status(bool status) {
@@ -343,7 +437,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     bool oled_task_user(void) {
         if (is_keyboard_master()) {
             oled_render_layer_state();
-            oled_render_keylog();
+            set_rgb_effect_string();
+            // Check if the keyboard has been idle for longer than the timeout
+            if (timer_elapsed32(last_keypress_timer) > OLED_IDLE_TIMEOUT) {
+                // Check if it's time to clear the screen again (every 5 seconds of idle time)
+                if (timer_elapsed32(oled_clear_timer) > OLED_CLEAR_INTERVAL) {
+                    oled_set_cursor(0, OLED_CLEAR_START_ROW);
+
+                    // Clear the rest of the screen by writing empty characters (spaces)
+                    // Adjust the number of spaces to fill the remaining lines on your OLED.
+                    // A common 128x32 OLED has about 21 characters per line.
+                    for (int i = OLED_CLEAR_START_ROW; i < 16; i++) {
+                        oled_set_cursor(0, i);
+                        oled_write_P(PSTR("     "), false); // 5 spaces
+                    }
+
+                    // Reset the clear timer to trigger again after the interval
+                    oled_clear_timer = timer_read32();
+                }
+            } else {
+                oled_render_keylog();
+            }
         } else {
             oled_render_logo();
         }
@@ -353,6 +467,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (record->event.pressed) {
         set_keylog(keycode);
+        // Reset the last keypress timer on every key press
+        last_keypress_timer = timer_read32();
+        // Also reset the clear timer, so the screen doesn't clear immediately
+        oled_clear_timer = timer_read32();
     }
     return true;
     }
