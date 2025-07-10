@@ -44,6 +44,7 @@ static uint32_t oled_clear_timer = 0;
 #define SYMBOL 6
 #define FUNCTION 7
 #define ADDITIONAL_FEATURES 8
+#define GAME 9
 
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
@@ -85,7 +86,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
   KC_LSFT,MT(MOD_LGUI,KC_A),MT(MOD_LALT,KC_S),MT(MOD_LCTL,KC_D),KC_F,KC_G,          KC_H,KC_J,MT(MOD_RCTL,KC_K),MT(MOD_RALT,KC_L),MT(MOD_RGUI,KC_SCLN),KC_QUOT,
   //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-   MO(BUTTON),    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT,KC_SLASH,MO(BUTTON),
+   MO(BUTTON),    KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M, KC_COMM,  KC_DOT,KC_SLASH,TG(GAME),
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
      LT(NUMERIC,KC_ESC),  LT(NAVIGATION,KC_SPC),  LT(SYMBOL,KC_TAB),    LT(MOUSE,KC_ENT), MT(MOD_RSFT,KC_BSPC), LT(FUNCTION,KC_DEL)
                                       //`--------------------------'  `--------------------------'
@@ -185,7 +186,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                           XXXXXXX, XXXXXXX, XXXXXXX,    XXXXXXX, XXXXXXX, _______
                                       //`--------------------------'  `--------------------------'
-  )
+  ),
+
+  [GAME] = LAYOUT_split_3x6_3(
+  //,-----------------------------------------------------.                    ,-----------------------------------------------------.
+       KC_ESC,    KC_T,    KC_Q,    KC_W,    KC_E,    KC_R,                         KC_Y,    KC_U,    KC_I,    KC_O,   KC_P,  KC_BSPC,
+  //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+      KC_LSFT,    KC_G,    KC_A,    KC_S,    KC_D,    KC_F,                         KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
+  //|--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
+      KC_LCTL,    KC_B,    KC_Z,    KC_X,    KC_C,    KC_V,                         KC_N,    KC_M, KC_COMM,  KC_DOT,KC_SLASH,TG(GAME),
+  //|--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
+                              LT(NUMERIC,KC_ESC),   KC_SPC,  KC_TAB,   LT(MOUSE,KC_ENT), MT(MOD_RSFT,KC_BSPC), LT(FUNCTION,KC_DEL)
+                                      //`--------------------------'  `--------------------------'
+  ),
 };
 
 #ifdef OLED_ENABLE
@@ -229,6 +242,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                 break;
             case ADDITIONAL_FEATURES:
                 oled_write_ln_P(PSTR("ADDTN"), false);
+                break;
+            case GAME:
+                oled_write_ln_P(PSTR("GAME"), false);
                 break;
         }
     }
